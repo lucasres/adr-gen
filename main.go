@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/lucasres/adr-generator/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +16,8 @@ func main() {
 			cmd.Help()
 		},
 	}
+
+	rootCmd.AddCommand(cmd.NewVersionCommand())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

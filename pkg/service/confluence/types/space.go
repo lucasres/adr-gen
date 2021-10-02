@@ -6,4 +6,5 @@ type Space struct {
 	ID   *int    `json:"id,omitempty"`
 	Key  string  `json:"key"`
 	Name *string `json:"name,omitempty"`
+	IdentifiableEntity
 }

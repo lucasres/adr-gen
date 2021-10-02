@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/lucasres/adr-generator/internal/file"
+	"github.com/lucasres/adr-gen/internal/file"
 	"github.com/spf13/cobra"
 )
 

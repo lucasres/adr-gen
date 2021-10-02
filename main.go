@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lucasres/adr-generator/cmd"
+	"github.com/lucasres/adr-gen/cmd"
 	"github.com/spf13/cobra"
 )
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:   "adr-generator",
+		Use:   "adr-gen",
 		Short: "ADR Generator",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()

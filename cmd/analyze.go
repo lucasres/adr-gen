@@ -3,10 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/lucasres/adr-gen/internal/file"
+	"github.com/lucasres/adr-gen/pkg/helpers"
 	"github.com/spf13/cobra"
 )
 
@@ -20,9 +20,7 @@ func NewAnalyzeCommand() *cobra.Command {
 func runAnalyze(cmd *cobra.Command, args []string) {
 	w, err := getAnalyzeWalker()
 	if err != nil {
-		// @todo: Define helper for handle errors
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		helpers.PrintErrorAndExit(err)
 	}
 
 	// @todo: Define timeout using user input
@@ -51,12 +49,10 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	case <-endChannel:
 		fmt.Println("finish")
 	case err := <-errChanel:
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		helpers.PrintErrorAndExit(err)
 	case <-ctx.Done():
 		if err := ctx.Err(); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+			helpers.PrintErrorAndExit(err)
 		}
 	}
 }

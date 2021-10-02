@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/lucasres/adr-gen/cmd"
+	"github.com/lucasres/adr-gen/pkg/helpers"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +19,6 @@ func main() {
 	rootCmd.AddCommand(cmd.NewAnalyzeCommand())
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		helpers.PrintErrorAndExit(err)
 	}
 }

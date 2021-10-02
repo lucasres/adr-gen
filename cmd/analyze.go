@@ -18,7 +18,7 @@ func NewAnalyzeCommand() *cobra.Command {
 }
 
 func runAnalyze(cmd *cobra.Command, args []string) {
-	w, err := file.NewLocalWalk(10, nil)
+	w, err := getAnalyzeWalker()
 	if err != nil {
 		// @todo: Define helper for handle errors
 		fmt.Fprintln(os.Stderr, err)
@@ -59,4 +59,9 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 	}
+}
+
+func getAnalyzeWalker() (file.Walker, error) {
+	// @todo: Construct Walker based in some configuration
+	return file.NewLocalWalk(10, nil)
 }

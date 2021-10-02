@@ -3,8 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
+	"github.com/lucasres/adr-gen/internal/engine"
 	"github.com/lucasres/adr-gen/internal/file"
 	"github.com/lucasres/adr-gen/pkg/helpers"
 	"github.com/spf13/cobra"
@@ -31,6 +33,7 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	}
 
 	r := getAnalyzeReader()
+	e := getAnalyzeEngine()
 
 	go func() {
 		if err := w.Walk(ctx, "./internal"); err != nil {
@@ -44,17 +47,29 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 		}
 	}()
 
+	var wg sync.WaitGroup
+
 	go func() {
 		for content := range r.Out() {
-			fmt.Printf("file Content:\n%s\n\n", content)
+			wg.Add(1)
+
+			go func() {
+				defer wg.Done()
+
+				if err := e.Run(content); err != nil {
+					errChanel <- err
+				}
+			}()
 		}
 
+		// Wait all engine goroutine finish
+		wg.Wait()
 		endChannel <- nil
 	}()
 
 	select {
 	case <-endChannel:
-		fmt.Println("finish")
+		fmt.Println("finished")
 	case err := <-errChanel:
 		helpers.PrintErrorAndExit(err)
 	case <-ctx.Done():
@@ -70,6 +85,11 @@ func getAnalyzeWalker() (file.Walker, error) {
 }
 
 func getAnalyzeReader() file.Reader {
-	// @todo: Construct Reader base in some configuration
+	// @todo: Construct Reader based in some configuration
 	return file.NewLocalReader(5)
+}
+
+func getAnalyzeEngine() engine.Engine {
+	// @todo: Create Engine based in some configuration
+	return engine.NewSengine()
 }

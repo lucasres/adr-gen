@@ -7,9 +7,9 @@ import (
 
 type Sengine struct{}
 
-func (e *Sengine) Analize(c ContentParsed) error {
+func (e *Sengine) Analize(c ContentParsed) (map[string]ADRHit, error) {
 
-	return nil
+	return nil, nil
 }
 
 func (e *Sengine) Parse(content []byte) (*ContentParsed, error) {

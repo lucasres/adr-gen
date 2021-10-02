@@ -18,11 +18,6 @@ func NewAnalyzeCommand() *cobra.Command {
 }
 
 func runAnalyze(cmd *cobra.Command, args []string) {
-	w, err := getAnalyzeWalker()
-	if err != nil {
-		helpers.PrintErrorAndExit(err)
-	}
-
 	// @todo: Define timeout using user input
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -30,16 +25,28 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	errChanel := make(chan error)
 	endChannel := make(chan interface{})
 
+	w, err := getAnalyzeWalker()
+	if err != nil {
+		helpers.PrintErrorAndExit(err)
+	}
+
+	r := getAnalyzeReader()
+
 	go func() {
 		if err := w.Walk(ctx, "./internal"); err != nil {
 			errChanel <- err
 		}
 	}()
 
-	// @todo: Create file reader
 	go func() {
-		for path := range w.Out() {
-			fmt.Println("path:", path)
+		if err := r.Read(ctx, w); err != nil {
+			errChanel <- err
+		}
+	}()
+
+	go func() {
+		for content := range r.Out() {
+			fmt.Printf("file Content:\n%s\n\n", content)
 		}
 
 		endChannel <- nil
@@ -60,4 +67,9 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 func getAnalyzeWalker() (file.Walker, error) {
 	// @todo: Construct Walker based in some configuration
 	return file.NewLocalWalk(10, nil)
+}
+
+func getAnalyzeReader() file.Reader {
+	// @todo: Construct Reader base in some configuration
+	return file.NewLocalReader(5)
 }

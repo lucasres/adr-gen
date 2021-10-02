@@ -18,6 +18,7 @@ func main() {
 	}
 
 	rootCmd.AddCommand(cmd.NewVersionCommand())
+	rootCmd.AddCommand(cmd.NewAnalyzeCommand())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

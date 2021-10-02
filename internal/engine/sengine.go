@@ -30,8 +30,8 @@ func (e *Sengine) PreProcess(content []byte) ([]byte, error) {
 	return contentWithSingleSpaces, nil
 }
 
-func (e *Sengine) Output(hits map[string]ADRHit) {
-
+func (e *Sengine) Output(hits map[string]ADRHit) error {
+	return nil
 }
 
 func (e *Sengine) Run(content []byte) error {

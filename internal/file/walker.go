@@ -52,8 +52,6 @@ func (l *LocalWalk) Walk(ctx context.Context, dirPath string) error {
 			}
 		}
 
-		fmt.Println(path, d, err)
-
 		l.out <- path
 		return nil
 	})

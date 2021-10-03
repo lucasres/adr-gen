@@ -3,10 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"os"
+	"sync"
 	"time"
 
+	"github.com/lucasres/adr-gen/internal/engine"
 	"github.com/lucasres/adr-gen/internal/file"
+	"github.com/lucasres/adr-gen/pkg/helpers"
 	"github.com/spf13/cobra"
 )
 
@@ -18,13 +20,6 @@ func NewAnalyzeCommand() *cobra.Command {
 }
 
 func runAnalyze(cmd *cobra.Command, args []string) {
-	w, err := getAnalyzeWalker()
-	if err != nil {
-		// @todo: Define helper for handle errors
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
 	// @todo: Define timeout using user input
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -32,31 +27,54 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	errChanel := make(chan error)
 	endChannel := make(chan interface{})
 
+	w, err := getAnalyzeWalker()
+	if err != nil {
+		helpers.PrintErrorAndExit(err)
+	}
+
+	r := getAnalyzeReader()
+	e := getAnalyzeEngine()
+
 	go func() {
 		if err := w.Walk(ctx, "./internal"); err != nil {
 			errChanel <- err
 		}
 	}()
 
-	// @todo: Create file reader
 	go func() {
-		for path := range w.Out() {
-			fmt.Println("path:", path)
+		if err := r.Read(ctx, w); err != nil {
+			errChanel <- err
+		}
+	}()
+
+	var wg sync.WaitGroup
+
+	go func() {
+		for content := range r.Out() {
+			wg.Add(1)
+
+			go func() {
+				defer wg.Done()
+
+				if err := e.Run(content); err != nil {
+					errChanel <- err
+				}
+			}()
 		}
 
+		// Wait all engine goroutine finish
+		wg.Wait()
 		endChannel <- nil
 	}()
 
 	select {
 	case <-endChannel:
-		fmt.Println("finish")
+		fmt.Println("finished")
 	case err := <-errChanel:
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		helpers.PrintErrorAndExit(err)
 	case <-ctx.Done():
 		if err := ctx.Err(); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+			helpers.PrintErrorAndExit(err)
 		}
 	}
 }
@@ -64,4 +82,14 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 func getAnalyzeWalker() (file.Walker, error) {
 	// @todo: Construct Walker based in some configuration
 	return file.NewLocalWalk(10, nil)
+}
+
+func getAnalyzeReader() file.Reader {
+	// @todo: Construct Reader based in some configuration
+	return file.NewLocalReader(5)
+}
+
+func getAnalyzeEngine() engine.Engine {
+	// @todo: Create Engine based in some configuration
+	return engine.NewSengine()
 }

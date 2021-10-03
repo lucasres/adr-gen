@@ -13,15 +13,27 @@ import (
 )
 
 func NewAnalyzeCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use: "analyze",
 		Run: runAnalyze,
 	}
+
+	// Add as flags que o comando tem
+	cmd.Flags().IntP("timeout", "t", 30, "Set timeout of process")
+
+	return cmd
 }
 
 func runAnalyze(cmd *cobra.Command, args []string) {
-	// @todo: Define timeout using user input
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	timeout, err := cmd.Flags().GetInt("timeout")
+
+	if err != nil {
+		// caso der erro em recupera o valor do timeout seta um valor padrao
+		timeout = 30
+		fmt.Println("Cannot get timeout value", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
 
 	errChanel := make(chan error)
@@ -36,7 +48,7 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	e := getAnalyzeEngine()
 
 	go func() {
-		if err := w.Walk(ctx, "./internal"); err != nil {
+		if err := w.Walk(ctx, "./examples"); err != nil {
 			errChanel <- err
 		}
 	}()

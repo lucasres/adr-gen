@@ -45,7 +45,6 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	}
 
 	r := getAnalyzeReader()
-	e := getAnalyzeEngine()
 
 	go func() {
 		if err := w.Walk(ctx, "./examples"); err != nil {
@@ -67,7 +66,7 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 
 			go func() {
 				defer wg.Done()
-
+				e := getAnalyzeEngine()
 				if err := e.Run(content); err != nil {
 					errChanel <- err
 				}

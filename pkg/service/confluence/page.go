@@ -10,23 +10,24 @@ import (
 	"github.com/lucasres/adr-gen/pkg/service/confluence/types"
 )
 
-// CreatePagePayload define request struct
+// CreatePageInput define request struct
 // https://docs.atlassian.com/ConfluenceServer/rest/7.11.6/#api/content-createContent
-type CreatePagePayload struct {
+type CreatePageInput struct {
 	Type  string      `json:"type"`
 	Title string      `json:"title"`
 	Space types.Space `json:"space"`
 	Body  types.Body  `json:"body"`
 }
 
-// CreatePageResult define request response struct
+// PageResult define request response struct
 // https://developer.atlassian.com/server/confluence/confluence-rest-api-examples/#create-a-new-page
-type CreatePageResult struct {
-	CreatePagePayload
+type PageResult struct {
+	ID int `json:"id"`
+	CreatePageInput
 	types.IdentifiableEntity
 }
 
-func (c *Client) CreatePage(ctx context.Context, page *CreatePagePayload) (*CreatePageResult, error) {
+func (c *Client) CreatePage(ctx context.Context, page *CreatePageInput) (*PageResult, error) {
 	body := &bytes.Buffer{}
 	if err := json.NewEncoder(body).Encode(page); err != nil {
 		return nil, fmt.Errorf("can't encode CreatePgaePayload to bytes buffer: %w", err)
@@ -47,7 +48,7 @@ func (c *Client) CreatePage(ctx context.Context, page *CreatePagePayload) (*Crea
 		)
 	}
 
-	var result *CreatePageResult
+	var result *PageResult
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("can't decode create page response: %w", err)
 	}

@@ -1,7 +1,9 @@
 package confluence
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -47,4 +49,27 @@ func (c *Client) createRequest(ctx context.Context, method, endpoint string, bod
 	req.Header.Add("Authorization", c.authorization)
 
 	return req, nil
+}
+
+func (c *Client) createAndDoRequest(ctx context.Context, method, endpoint string, jsonableBody interface{}) (*http.Response, error) {
+	var body io.ReadWriter
+	if jsonableBody != nil {
+		body = &bytes.Buffer{}
+
+		if err := json.NewEncoder(body).Encode(jsonableBody); err != nil {
+			return nil, fmt.Errorf("can't encode payload to bytes buffer: %w", err)
+		}
+	}
+
+	req, err := c.createRequest(ctx, method, endpoint, body)
+	if err != nil {
+		return nil, fmt.Errorf("can't create request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("can't do request: %w", err)
+	}
+
+	return res, nil
 }

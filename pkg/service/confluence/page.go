@@ -50,6 +50,7 @@ type UpdatePageInput struct {
 }
 
 func (c *Client) CreatePage(ctx context.Context, page *CreatePageInput) (*PageResult, error) {
+	// @todo: Update to use helper method: *Client.createAndDoRequest
 	body := &bytes.Buffer{}
 	if err := json.NewEncoder(body).Encode(page); err != nil {
 		return nil, fmt.Errorf("can't encode create page payload to bytes buffer: %w", err)
@@ -67,6 +68,7 @@ func (c *Client) CreatePage(ctx context.Context, page *CreatePageInput) (*PageRe
 
 	defer res.Body.Close()
 
+	// @todo: Update to use helper function: assertResponseStatusCode
 	if res.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf(
 			"confluence don't return HTTP Status Code 201. Returned: [%d] - \"%s\"",
@@ -124,6 +126,7 @@ func (c *Client) GetPages(ctx context.Context, input *GetPagesInput) (*PageListR
 
 	defer res.Body.Close()
 
+	// @todo: Update to use helper function: assertResponseStatusCode
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
 			"confluence don't return HTTP Status Code 200. Returned: [%d] - \"%s\"",

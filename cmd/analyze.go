@@ -27,19 +27,10 @@ func NewAnalyzeCommand() *cobra.Command {
 
 func runAnalyze(cmd *cobra.Command, args []string) {
 	timeout, err := cmd.Flags().GetInt("timeout")
-
-	if err != nil {
-		// caso der erro em recupera o valor do timeout seta um valor padrao
-		timeout = 30
-		fmt.Println("Cannot get timeout value", err)
-	}
+	helpers.PrintAndExitIfGetFlagReturnError("timeout", err)
 
 	path, err := cmd.Flags().GetString("path")
-	if err != nil {
-		helpers.PrintErrorAndExit(
-			fmt.Errorf("can't retrive \"path\" flag: %w", err),
-		)
-	}
+	helpers.PrintAndExitIfGetFlagReturnError("path", err)
 
 	if len(path) < 1 {
 		helpers.PrintErrorAndExit(

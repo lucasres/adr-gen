@@ -64,13 +64,13 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 		for content := range r.Out() {
 			wg.Add(1)
 
-			go func() {
+			go func(fileContents []byte) {
 				defer wg.Done()
 				e := getAnalyzeEngine()
-				if err := e.Run(content); err != nil {
+				if err := e.Run(fileContents); err != nil {
 					errChanel <- err
 				}
-			}()
+			}(content)
 		}
 
 		// Wait all engine goroutine finish

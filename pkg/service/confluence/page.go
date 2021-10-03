@@ -12,6 +12,7 @@ import (
 
 // CreatePageInput define request struct
 // https://docs.atlassian.com/ConfluenceServer/rest/7.11.6/#api/content-createContent
+// @todo: Allow create page as child from another
 type CreatePageInput struct {
 	Type  string      `json:"type"`
 	Title string      `json:"title"`
@@ -22,8 +23,7 @@ type CreatePageInput struct {
 // PageResult define request response struct
 // https://developer.atlassian.com/server/confluence/confluence-rest-api-examples/#create-a-new-page
 type PageResult struct {
-	ID int `json:"id"`
-	CreatePageInput
+	UpdatePageInput
 	types.IdentifiableEntity
 }
 
@@ -41,6 +41,12 @@ type PageListResult struct {
 	Size  int          `json:"size"`
 	Start int          `json:"start"`
 	Pages []PageResult `json:"results"`
+}
+
+type UpdatePageInput struct {
+	ID      int               `json:"id"`
+	Version types.PageVersion `json:"version"`
+	CreatePageInput
 }
 
 func (c *Client) CreatePage(ctx context.Context, page *CreatePageInput) (*PageResult, error) {
@@ -129,6 +135,32 @@ func (c *Client) GetPages(ctx context.Context, input *GetPagesInput) (*PageListR
 	var result *PageListResult
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("can't decode get pages response: %w", err)
+	}
+
+	return result, nil
+}
+
+func (c *Client) UpdatePage(ctx context.Context, input *UpdatePageInput) (*PageResult, error) {
+	res, err := c.createAndDoRequest(
+		ctx,
+		http.MethodPut,
+		fmt.Sprintf("content/%d", input.ID),
+		input,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("can't request update page: %w", err)
+	}
+
+	defer res.Body.Close()
+
+	if err := assertResponseStatusCode(res, http.StatusOK); err != nil {
+		return nil, fmt.Errorf("update page failed: %w", err)
+	}
+
+	var result *PageResult
+	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("can't decode update page response: %w", err)
 	}
 
 	return result, nil

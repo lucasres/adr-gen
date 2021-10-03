@@ -29,9 +29,9 @@ func NewClient(pat, urlPrefix string, httpClient *http.Client) *Client {
 	}
 }
 
-// doRequest Create and send HTTP request
+// createRequest Create and send HTTP request
 // endpoint is concatened with Client.urlPrefix: "{Client.urlPrefix}/{endpoint}". So do not add "/" prefix do endpoint
-func (c *Client) doRequest(ctx context.Context, method, endpoint string, body io.Reader) (*http.Response, error) {
+func (c *Client) createRequest(ctx context.Context, method, endpoint string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		method,
@@ -46,5 +46,5 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body io
 	// https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html#UsingPersonalAccessTokens-UsingPATs
 	req.Header.Add("Authorization", c.authorization)
 
-	return c.httpClient.Do(req)
+	return req, nil
 }

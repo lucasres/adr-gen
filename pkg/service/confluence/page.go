@@ -30,10 +30,15 @@ type PageResult struct {
 func (c *Client) CreatePage(ctx context.Context, page *CreatePageInput) (*PageResult, error) {
 	body := &bytes.Buffer{}
 	if err := json.NewEncoder(body).Encode(page); err != nil {
-		return nil, fmt.Errorf("can't encode CreatePgaePayload to bytes buffer: %w", err)
+		return nil, fmt.Errorf("can't encode create page payload to bytes buffer: %w", err)
 	}
 
-	res, err := c.doRequest(ctx, http.MethodPost, "content", body)
+	req, err := c.createRequest(ctx, http.MethodPost, "content", body)
+	if err != nil {
+		return nil, fmt.Errorf("can't create create page request: %w", err)
+	}
+
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("can't request create page: %w", err)
 	}

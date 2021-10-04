@@ -12,6 +12,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	analyzeFlagTimeout = "timeout"
+	analyzeFlagPath    = "path"
+)
+
 func NewAnalyzeCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "analyze",
@@ -19,18 +24,18 @@ func NewAnalyzeCommand() *cobra.Command {
 	}
 
 	// Add as flags que o comando tem
-	cmd.Flags().IntP("timeout", "t", 30, "Set timeout of process")
-	cmd.Flags().StringP("path", "p", "", "Specify the path to be analyzed")
+	cmd.Flags().IntP(analyzeFlagTimeout, "t", 30, "Set timeout of process")
+	cmd.Flags().StringP(analyzeFlagPath, "p", "", "Specify the path to be analyzed")
 
 	return cmd
 }
 
 func runAnalyze(cmd *cobra.Command, args []string) {
-	timeout, err := cmd.Flags().GetInt("timeout")
-	helpers.PrintAndExitIfGetFlagReturnError("timeout", err)
+	timeout, err := cmd.Flags().GetInt(analyzeFlagTimeout)
+	helpers.PrintAndExitIfGetFlagReturnError(analyzeFlagTimeout, err)
 
-	path, err := cmd.Flags().GetString("path")
-	helpers.PrintAndExitIfGetFlagReturnError("path", err)
+	path, err := cmd.Flags().GetString(analyzeFlagPath)
+	helpers.PrintAndExitIfGetFlagReturnError(analyzeFlagPath, err)
 
 	if len(path) < 1 {
 		helpers.PrintErrorAndExit(

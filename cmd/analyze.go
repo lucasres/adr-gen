@@ -12,6 +12,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	analyzeFlagTimeout = "timeout"
+	analyzeFlagPath    = "path"
+)
+
 func NewAnalyzeCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "analyze",
@@ -19,18 +24,23 @@ func NewAnalyzeCommand() *cobra.Command {
 	}
 
 	// Add as flags que o comando tem
-	cmd.Flags().IntP("timeout", "t", 30, "Set timeout of process")
+	cmd.Flags().IntP(analyzeFlagTimeout, "t", 30, "Set timeout of process")
+	cmd.Flags().StringP(analyzeFlagPath, "p", "", "Specify the path to be analyzed")
 
 	return cmd
 }
 
 func runAnalyze(cmd *cobra.Command, args []string) {
-	timeout, err := cmd.Flags().GetInt("timeout")
+	timeout, err := cmd.Flags().GetInt(analyzeFlagTimeout)
+	helpers.PrintAndExitIfGetFlagReturnError(analyzeFlagTimeout, err)
 
-	if err != nil {
-		// caso der erro em recupera o valor do timeout seta um valor padrao
-		timeout = 30
-		fmt.Println("Cannot get timeout value", err)
+	path, err := cmd.Flags().GetString(analyzeFlagPath)
+	helpers.PrintAndExitIfGetFlagReturnError(analyzeFlagPath, err)
+
+	if len(path) < 1 {
+		helpers.PrintErrorAndExit(
+			fmt.Errorf("the path to be analyzed is invalid, please specify a valid path with \"--path\" flag"),
+		)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
@@ -47,7 +57,7 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	r := getAnalyzeReader()
 
 	go func() {
-		if err := w.Walk(ctx, "./examples"); err != nil {
+		if err := w.Walk(ctx, path); err != nil {
 			errChanel <- err
 		}
 	}()

@@ -14,6 +14,5 @@ type Engine interface {
 	PreProcess(content []byte) ([]byte, error)
 	Parse([]byte) (*ContentParsed, error)
 	Analize(content ContentParsed) (map[string]ADRHit, error)
-	Output(hits map[string]ADRHit) error
-	Run(content []byte) error
+	Run(content []byte) (map[string]ADRHit, error)
 }

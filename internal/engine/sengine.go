@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -43,35 +41,26 @@ func (e *Sengine) PreProcess(content []byte) ([]byte, error) {
 	return content, nil
 }
 
-func (e *Sengine) Output(hits map[string]ADRHit) error {
-	return nil
-}
-
-func (e *Sengine) Run(content []byte) error {
+func (e *Sengine) Run(content []byte) (map[string]ADRHit, error) {
 	processed, err := e.PreProcess(content)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	parsed, err := e.Parse(processed)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	hits, err := e.Analize(*parsed)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for a, b := range hits {
-		fmt.Println(a)
-		fmt.Println(b.Description, b.ID)
-	}
-
-	return errors.New("must be not implemented")
+	return hits, nil
 }
 
 func NewSengine() *Sengine {

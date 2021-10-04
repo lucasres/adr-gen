@@ -8,6 +8,7 @@ import (
 
 	"github.com/lucasres/adr-gen/internal/engine"
 	"github.com/lucasres/adr-gen/internal/file"
+	"github.com/lucasres/adr-gen/internal/output"
 	"github.com/lucasres/adr-gen/pkg/helpers"
 	"github.com/spf13/cobra"
 )
@@ -15,6 +16,7 @@ import (
 const (
 	analyzeFlagTimeout = "timeout"
 	analyzeFlagPath    = "path"
+	outputFlagPath     = "output"
 )
 
 func NewAnalyzeCommand() *cobra.Command {
@@ -26,6 +28,7 @@ func NewAnalyzeCommand() *cobra.Command {
 	// Add as flags que o comando tem
 	cmd.Flags().IntP(analyzeFlagTimeout, "t", 30, "Set timeout of process")
 	cmd.Flags().StringP(analyzeFlagPath, "p", "", "Specify the path to be analyzed")
+	cmd.Flags().StringP(outputFlagPath, "o", "", "Specify the path to be generate docs")
 
 	return cmd
 }
@@ -37,9 +40,18 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	path, err := cmd.Flags().GetString(analyzeFlagPath)
 	helpers.PrintAndExitIfGetFlagReturnError(analyzeFlagPath, err)
 
+	output, err := cmd.Flags().GetString(outputFlagPath)
+	helpers.PrintAndExitIfGetFlagReturnError(outputFlagPath, err)
+
 	if len(path) < 1 {
 		helpers.PrintErrorAndExit(
 			fmt.Errorf("the path to be analyzed is invalid, please specify a valid path with \"--path\" flag"),
+		)
+	}
+
+	if len(output) < 1 {
+		helpers.PrintErrorAndExit(
+			fmt.Errorf("the output path is invalid, please specify a valid path with \"--output\" flag"),
 		)
 	}
 
@@ -77,9 +89,15 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 			go func(fileContents []byte) {
 				defer wg.Done()
 				e := getAnalyzeEngine()
-				if err := e.Run(fileContents); err != nil {
+				hits, err := e.Run(fileContents)
+
+				o := getOutput()
+				o.Write(output, hits)
+
+				if err != nil {
 					errChanel <- err
 				}
+
 			}(content)
 		}
 
@@ -113,4 +131,9 @@ func getAnalyzeReader() file.Reader {
 func getAnalyzeEngine() engine.Engine {
 	// @todo: Create Engine based in some configuration
 	return engine.NewSengine()
+}
+
+func getOutput() output.OutputBase {
+	// @todo: Create Outup based in some configuration
+	return output.NewFileOutput()
 }

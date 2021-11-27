@@ -8,7 +8,7 @@ import (
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:   "adr-gen",
+		Use:   "adrgen",
 		Short: "ADR Generator",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
